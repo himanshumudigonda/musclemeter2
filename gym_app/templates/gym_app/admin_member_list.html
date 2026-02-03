@@ -1,0 +1,76 @@
+{% extends 'gym_app/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold">MEMBER <span style="color: var(--accent-lime);">ROSTER</span></h2>
+        <p class="text-secondary">Manage access and subscriptions.</p>
+    </div>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="glass-card p-0 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0">
+            <thead class="bg-secondary bg-opacity-10">
+                <tr>
+                    <th class="p-3 text-secondary ps-4">Member</th>
+                    <th class="p-3 text-secondary">Contact</th>
+                    <th class="p-3 text-secondary">Plan</th>
+                    <th class="p-3 text-secondary">Status</th>
+                    <th class="p-3 text-secondary text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                <tr>
+                    <td class="p-3 ps-4">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                style="width: 40px; height: 40px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">{{ member.user.get_full_name|default:member.user.username }}</div>
+                                <div class="small text-secondary">ID: #{{ member.id|stringformat:"04d" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <div>{{ member.user.email }}</div>
+                        <div class="small text-secondary">{{ member.phone_number }}</div>
+                    </td>
+                    <td class="p-3">
+                        <span
+                            class="badge {% if 'Elite' in member.subscription_type %}bg-warning text-dark{% elif 'Premium' in member.subscription_type %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                            {{ member.subscription_type }}
+                        </span>
+                    </td>
+                    <td class="p-3">
+                        {% if member.subscription_status %}
+                        <span class="text-success small fw-bold"><i class="fas fa-circle me-1"></i> Active</span>
+                        {% else %}
+                        <span class="text-danger small fw-bold"><i class="fas fa-circle me-1"></i> Expired</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-end pe-4">
+                        <a href="#" class="btn btn-sm btn-outline-neon me-1" title="Record Payment">
+                            <i class="fas fa-dollar-sign"></i>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-danger" title="Remove Member">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-secondary">No members found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

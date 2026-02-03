@@ -1,0 +1,97 @@
+{% extends 'gym_app/base.html' %}
+
+{% block content %}
+<div class="row pt-4">
+    <!-- Digital ID Card Section -->
+    <div class="col-lg-5 mb-4">
+        <h2 class="fw-bold mb-4">MY <span style="color: var(--accent-lime);">ZONE</span></h2>
+
+        <div class="glass-card p-4 position-relative overflow-hidden" style="border: 2px solid var(--accent-blue);">
+            <div class="position-absolute top-0 end-0 p-3">
+                <i class="fas fa-dumbbell fa-3x opacity-25 text-white"></i>
+            </div>
+
+            <div class="text-center mb-4">
+                <div class="bg-dark rounded-circle d-inline-flex align-items-center justify-content-center border border-2 border-secondary mb-3"
+                    style="width: 100px; height: 100px;">
+                    <i class="fas fa-user fa-3x text-secondary"></i>
+                </div>
+                <h3 class="fw-bold mb-0 text-white">{{ member.user.get_full_name|default:member.user.username }}</h3>
+                <p class="text-secondary small">ID: #{{ member.id|stringformat:"04d" }}</p>
+            </div>
+
+            <div class="bg-white p-3 rounded-3 text-center mb-3">
+                <img src="data:image/png;base64,{{ qr_image }}" alt="Member QR Code" class="img-fluid"
+                    style="max-height: 180px;">
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-3 mt-3">
+                <div>
+                    <small class="text-secondary d-block text-uppercase">Plan</small>
+                    <span class="fw-bold text-white">{{ member.subscription_type }}</span>
+                </div>
+                <div class="text-end">
+                    <small class="text-secondary d-block text-uppercase">Status</small>
+                    {% if member.subscription_status %}
+                    <span class="badge bg-success text-white">ACTIVE</span>
+                    {% else %}
+                    <span class="badge bg-danger text-white">EXPIRED</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats & History Section -->
+    <div class="col-lg-7">
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="glass-card p-3 text-center">
+                    <h5 class="text-secondary">Join Date</h5>
+                    <h3 class="fw-bold">{{ member.join_date|date:"M d, Y" }}</h3>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="glass-card p-3 text-center">
+                    <h5 class="text-secondary">Next Due</h5>
+                    <h3 class="fw-bold" style="color: var(--accent-lime);">
+                        {% if member.subscription_status %}
+                        In 30 Days
+                        {% else %}
+                        Overdue
+                        {% endif %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-4">
+            <h4 class="fw-bold mb-3">Payment <span style="color: var(--accent-blue);">History</span></h4>
+            <div class="table-responsive">
+                <table class="table table-dark table-striped table-hover small mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-secondary">Date</th>
+                            <th class="text-secondary">Method</th>
+                            <th class="text-secondary text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.payment_date }}</td>
+                            <td>{{ payment.payment_method }}</td>
+                            <td class="text-end text-white">${{ payment.amount }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-secondary py-3">No payment history found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

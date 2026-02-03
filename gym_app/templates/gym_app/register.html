@@ -1,0 +1,48 @@
+{% extends 'gym_app/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="glass-card p-4 p-md-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold"><span style="color: var(--accent-lime);">IGNITE</span> YOUR POTENTIAL</h2>
+                <p class="text-secondary">Create your Gym Profile and start training.</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="row g-3">
+                    {% for field in form %}
+                    <div class="col-12">
+                        <label class="form-label text-secondary small fw-bold text-uppercase ps-1">{{ field.label
+                            }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <div class="form-text text-white-50 small">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ field.errors|striptags }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-4 pt-2">
+                    <button type="submit" class="btn btn-neon w-100 py-3 text-uppercase fs-5">
+                        Start Your Journey <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-4">
+                <p class="small text-secondary mb-0">Already a member?</p>
+                <a href="{% url 'login' %}" class="text-decoration-none fw-bold"
+                    style="color: var(--accent-blue);">Login Here</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
