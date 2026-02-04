@@ -141,12 +141,17 @@ def gym_detail(request, gym_id):
     if user_lat and user_lon:
         distance = round(calculate_distance(user_lat, user_lon, gym.latitude, gym.longitude), 1)
     
+    is_owner = False
+    if request.user.is_authenticated and hasattr(request.user, 'gym_owner_profile'):
+        is_owner = (request.user.gym_owner_profile == gym.owner)
+
     context = {
         'gym': gym,
         'photos': photos,
         'plans': plans,
         'distance': distance,
         'primary_photo': photos.filter(is_primary=True).first() or photos.first(),
+        'is_owner': is_owner,
     }
     return render(request, 'gym_app/gym_detail.html', context)
 
@@ -329,6 +334,33 @@ def gym_add_plans(request, gym_id):
     }
     return render(request, 'gym_app/gym_add_plans.html', context)
 
+
+@login_required
+def gym_edit_plan(request, gym_id, plan_id):
+    """Edit an existing gym plan."""
+    gym = get_object_or_404(Gym, id=gym_id)
+    plan = get_object_or_404(GymPlan, id=plan_id, gym=gym)
+    
+    # Verify ownership
+    if gym.owner.user != request.user:
+        messages.error(request, 'Access denied.')
+        return redirect('owner_dashboard')
+    
+    if request.method == 'POST':
+        form = GymPlanForm(request.POST, instance=plan)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Plan "{plan.name}" updated successfully!')
+            return redirect('owner_dashboard')
+    else:
+        form = GymPlanForm(instance=plan)
+    
+    context = {
+        'gym': gym,
+        'plan': plan,
+        'form': form,
+    }
+    return render(request, 'gym_app/gym_edit_plan.html', context)
 
 def update_location(request):
     """API endpoint to update customer's last known location."""

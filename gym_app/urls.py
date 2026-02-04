@@ -19,6 +19,7 @@ urlpatterns = [
     path('owner/dashboard/', views.owner_dashboard, name='owner_dashboard'),
     path('owner/gym/register/', views.gym_register, name='gym_register'),
     path('owner/gym/<int:gym_id>/plans/', views.gym_add_plans, name='gym_add_plans'),
+    path('owner/gym/<int:gym_id>/plan/<int:plan_id>/edit/', views.gym_edit_plan, name='gym_edit_plan'),
     
     # API
     path('api/update-location/', views.update_location, name='update_location'),

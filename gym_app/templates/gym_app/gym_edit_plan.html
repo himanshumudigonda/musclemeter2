@@ -1,0 +1,113 @@
+{% extends 'gym_app/base.html' %}
+
+{% block title %}Edit Plan - {{ gym.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-plan-page {
+        padding: 2rem 0;
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-card {
+        width: 100%;
+        max-width: 600px;
+        padding: 2.5rem;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-subtitle {
+        color: var(--text-secondary);
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-check {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .feature-hint {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container edit-plan-page">
+    <div class="glass-card form-card">
+        <div class="form-header">
+            <h1 class="form-title">Edit Plan</h1>
+            <p class="form-subtitle">Update details for existing plan</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label">Plan Name *</label>
+                {{ form.name }}
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Duration *</label>
+                    {{ form.duration }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price (₹) *</label>
+                    {{ form.price }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Features *</label>
+                {{ form.features }}
+                <p class="feature-hint">Keep features comma-separated</p>
+            </div>
+
+            <div class="form-check">
+                {{ form.is_popular }}
+                <label class="form-check-label ms-2" for="id_is_popular">
+                    <i class="fas fa-fire me-1 text-warning"></i> Mark as Popular
+                </label>
+            </div>
+
+            <div class="action-buttons">
+                <a href="{% url 'owner_dashboard' %}" class="btn btn-glass flex-grow-1">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-neon flex-grow-1">
+                    <i class="fas fa-save me-2"></i>Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
