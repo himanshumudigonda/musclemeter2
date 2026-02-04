@@ -4,40 +4,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuscleMeter | Premium Gym Management</title>
+    <title>{% block title %}MuscleMeter{% endblock %} | Find Your Perfect Gym</title>
+    <meta name="description" content="MuscleMeter - Discover and book gyms near you. Like BookMyShow, but for fitness.">
 
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Google Fonts: Poppins & Montserrat -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600&display=swap"
         rel="stylesheet">
 
-    <!-- FontAwesome/Bootstrap Icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            /* Palette: Deep Matte Black/Dark Grey with Neon Lime/Electric Blue */
-            --bg-dark: #121212;
-            --bg-card: #1E1E1E;
-            --text-primary: #FFFFFF;
-            --text-secondary: #AAAAAA;
-            --accent-lime: #CCFF00;
-            --accent-blue: #00F0FF;
-            --accent-gradient: linear-gradient(45deg, var(--accent-blue), var(--accent-lime));
+            /* Premium Dark Theme */
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #121218;
+            --bg-card: #1a1a24;
+            --bg-card-hover: #222230;
 
+            /* Text */
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #6b6b7b;
+
+            /* Accent Colors */
+            --accent-primary: #CCFF00;
+            --accent-secondary: #00F0FF;
+            --accent-gradient: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+            --accent-glow: rgba(204, 255, 0, 0.3);
+            --accent-blue-glow: rgba(0, 240, 255, 0.3);
+
+            /* Status Colors */
+            --success: #00E676;
+            --warning: #FFD600;
+            --danger: #FF5252;
+
+            /* Typography */
             --font-heading: 'Montserrat', sans-serif;
             --font-body: 'Poppins', sans-serif;
+
+            /* Spacing */
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+
+            /* Transitions */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            background-color: var(--bg-dark);
+            background: var(--bg-primary);
             color: var(--text-primary);
             font-family: var(--font-body);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         h1,
@@ -52,108 +88,560 @@
             letter-spacing: -0.5px;
         }
 
-        /* Glassmorphism Card Style */
-        .glass-card {
-            background: rgba(30, 30, 30, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: var(--transition-fast);
         }
 
-        .btn-neon {
-            background: var(--accent-lime);
-            color: #000;
-            font-weight: 700;
-            border: none;
-            box-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
-            transition: all 0.3s ease;
+        a:hover {
+            color: var(--accent-secondary);
         }
 
-        .btn-neon:hover {
-            background: #b3e600;
-            box-shadow: 0 0 20px rgba(204, 255, 0, 0.6);
-            transform: translateY(-2px);
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .btn-outline-neon {
-            border: 2px solid var(--accent-blue);
-            color: var(--accent-blue);
-            font-weight: 600;
-            background: transparent;
-            transition: all 0.3s ease;
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
         }
 
-        .btn-outline-neon:hover {
-            background: var(--accent-blue);
-            color: #000;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-card);
+            border-radius: 4px;
         }
 
-        /* Navbar Styling */
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
+
+        /* === NAVBAR === */
         .navbar {
-            background: rgba(18, 18, 18, 0.95);
-            backdrop-filter: blur(5px);
+            background: rgba(10, 10, 15, 0.95) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
 
         .navbar-brand {
+            font-family: var(--font-heading);
+            font-weight: 900;
             font-size: 1.5rem;
             color: var(--text-primary) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-brand i {
+            color: var(--accent-primary);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .navbar-brand .brand-accent {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .nav-link {
             color: var(--text-secondary) !important;
             font-weight: 500;
-            transition: color 0.3s;
+            padding: 0.5rem 1rem !important;
+            transition: var(--transition-fast);
+            position: relative;
         }
 
         .nav-link:hover,
         .nav-link.active {
-            color: var(--accent-lime) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 60%;
+            height: 2px;
+            background: var(--accent-gradient);
+            transition: var(--transition-fast);
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
+        /* === BUTTONS === */
+        .btn-neon {
+            background: var(--accent-primary);
+            color: #000;
+            font-weight: 700;
+            font-family: var(--font-heading);
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 0.75rem 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px var(--accent-glow);
+            transition: var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-neon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-neon:hover {
+            background: #b8e600;
+            color: #000;
+            box-shadow: 0 0 40px var(--accent-glow), 0 0 80px var(--accent-glow);
+            transform: translateY(-3px);
+        }
+
+        .btn-neon:hover::before {
+            left: 100%;
+        }
+
+        .btn-outline-neon {
+            background: transparent;
+            color: var(--accent-secondary);
+            font-weight: 600;
+            font-family: var(--font-heading);
+            border: 2px solid var(--accent-secondary);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition-normal);
+        }
+
+        .btn-outline-neon:hover {
+            background: var(--accent-secondary);
+            color: #000;
+            box-shadow: 0 0 30px var(--accent-blue-glow);
+            transform: translateY(-3px);
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            backdrop-filter: blur(10px);
+            transition: var(--transition-normal);
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* === CARDS === */
+        .glass-card {
+            background: rgba(26, 26, 36, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: var(--transition-normal);
+        }
+
+        .glass-card:hover {
+            background: rgba(34, 34, 48, 0.7);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-5px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+        }
+
+        .hover-glow:hover {
+            box-shadow: 0 0 30px var(--accent-glow), 0 16px 48px rgba(0, 0, 0, 0.4);
+        }
+
+        /* === FORMS === */
+        .form-control,
+        .form-select {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border-radius: var(--radius-sm);
+            padding: 0.875rem 1rem;
+            transition: var(--transition-fast);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: var(--bg-card);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        /* === BADGES === */
+        .badge-neon {
+            background: var(--accent-primary);
+            color: #000;
+            font-weight: 600;
+            padding: 0.35em 0.75em;
+            border-radius: var(--radius-sm);
+        }
+
+        .badge-glass {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* === ANIMATIONS === */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% center;
+            }
+
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .animate-scale-in {
+            animation: scaleIn 0.4s ease forwards;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-4 {
+            animation-delay: 0.4s;
+        }
+
+        /* === TOASTS === */
+        .toast-container {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 1100;
+        }
+
+        .toast-custom {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .toast-custom.toast-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast-custom.toast-error {
+            border-left: 4px solid var(--danger);
+        }
+
+        /* === MAIN CONTENT === */
+        .main-content {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* === LOADING === */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-normal);
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--bg-card);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* === UTILITIES === */
+        .text-gradient {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .text-neon {
+            color: var(--accent-primary);
+        }
+
+        .text-cyan {
+            color: var(--accent-secondary);
+        }
+
+        .bg-gradient-primary {
+            background: var(--accent-gradient);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+
+            .btn-neon,
+            .btn-outline-neon {
+                padding: 0.625rem 1.5rem;
+                font-size: 0.875rem;
+            }
+
+            .glass-card {
+                border-radius: var(--radius-md);
+            }
         }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
 
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-dumbbell me-2" style="color: var(--accent-lime);"></i>MUSCLE<span
-                    style="color: var(--accent-blue);">METER</span>
+            <a class="navbar-brand" href="{% url 'landing' %}">
+                <i class="fas fa-dumbbell"></i>
+                MUSCLE<span class="brand-accent">METER</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+                <ul class="navbar-nav ms-auto align-items-center gap-2">
                     {% if user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" style="color: var(--accent-lime) !important;"
-                            href="{% url 'member_profile' %}">My Zone</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-sm btn-outline-neon ms-lg-3 px-4"
-                            href="{% url 'logout' %}">Logout</a></li>
+                    {% if user.gym_owner_profile %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_dashboard' %}">
+                            <i class="fas fa-chart-line me-1"></i>Dashboard
+                        </a>
+                    </li>
                     {% else %}
-                    <li class="nav-item"><a class="nav-link btn btn-sm btn-outline-neon ms-lg-3 px-4"
-                            href="{% url 'login' %}">Login</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'explore' %}">
+                            <i class="fas fa-search me-1"></i>Explore
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="btn btn-glass btn-sm px-3" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'explore' %}">Explore</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-neon btn-sm px-3" href="{% url 'login' %}">Login</a>
+                    </li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
+    <!-- Toast Container -->
+    <div class="toast-container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="toast toast-custom {% if message.tags %}toast-{{ message.tags }}{% endif %} show" role="alert">
+            <div class="toast-body d-flex align-items-center gap-2 p-3">
+                {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle text-success"></i>
+                {% elif message.tags == 'error' %}
+                <i class="fas fa-exclamation-circle text-danger"></i>
+                {% else %}
+                <i class="fas fa-info-circle text-info"></i>
+                {% endif %}
+                {{ message }}
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
     <!-- Main Content -->
-    <div class="container" style="margin-top: 100px;">
+    <main class="main-content">
         {% block content %}
         {% endblock %}
-    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 mt-5 border-top" style="border-color: rgba(255,255,255,0.05) !important;">
+        <div class="container text-center">
+            <p class="text-muted mb-0">
+                © 2026 <span class="text-neon">MuscleMeter</span>. Find Your Perfect Gym.
+            </p>
+        </div>
+    </footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global JS -->
+    <script>
+        // Auto-hide toasts after 5 seconds
+        document.querySelectorAll('.toast').forEach(toast => {
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        });
+
+        // Loading overlay helpers
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // Geolocation helper
+        function getLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation not supported'));
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                    position => resolve({
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude
+                    }),
+                    error => reject(error),
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            });
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>

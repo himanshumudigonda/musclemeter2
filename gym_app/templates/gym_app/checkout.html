@@ -1,0 +1,298 @@
+{% extends 'gym_app/base.html' %}
+
+{% block title %}Checkout - {{ gym.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-page {
+        padding: 2rem 0;
+    }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 2rem;
+    }
+
+    @media (max-width: 992px) {
+        .checkout-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .payment-form-card {
+        padding: 2rem;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-section-title i {
+        color: var(--accent-primary);
+    }
+
+    .card-icons {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-icons i {
+        font-size: 2rem;
+        color: var(--text-muted);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    /* Order Summary */
+    .order-summary {
+        padding: 2rem;
+        position: sticky;
+        top: 100px;
+    }
+
+    .order-gym {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .order-gym-image {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .order-gym-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .order-gym-image .placeholder {
+        width: 100%;
+        height: 100%;
+        background: var(--bg-card);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+    }
+
+    .order-plan {
+        padding: 1.25rem;
+        background: rgba(204, 255, 0, 0.05);
+        border: 1px solid rgba(204, 255, 0, 0.2);
+        border-radius: var(--radius-md);
+        margin-bottom: 1.5rem;
+    }
+
+    .order-items {
+        margin-bottom: 1.5rem;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-top: 2px solid rgba(255, 255, 255, 0.1);
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .order-total .amount {
+        color: var(--accent-primary);
+    }
+
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin-top: 1rem;
+    }
+
+    .secure-badge i {
+        color: var(--success);
+    }
+
+    .test-card-notice {
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid rgba(0, 240, 255, 0.3);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+
+    .test-card-notice i {
+        color: var(--accent-secondary);
+    }
+
+    .error-list {
+        background: rgba(255, 82, 82, 0.1);
+        border: 1px solid rgba(255, 82, 82, 0.3);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .error-list ul {
+        margin: 0;
+        padding-left: 1.25rem;
+        color: var(--danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container checkout-page">
+    <h1 class="mb-4">Complete Your Booking</h1>
+
+    <div class="checkout-grid">
+        <!-- Payment Form -->
+        <div class="glass-card payment-form-card">
+            <div class="test-card-notice">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Test Mode:</strong> Use any card number (e.g., 4242 4242 4242 4242) with any future expiry and
+                CVV.
+            </div>
+
+            {% if form.errors %}
+            <div class="error-list">
+                <ul>
+                    {% for field in form %}
+                    {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.plan_id }}
+
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-credit-card"></i> Payment Details
+                    </h3>
+
+                    <div class="card-icons">
+                        <i class="fab fa-cc-visa"></i>
+                        <i class="fab fa-cc-mastercard"></i>
+                        <i class="fab fa-cc-amex"></i>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Card Number</label>
+                        {{ form.card_number }}
+                    </div>
+
+                    <div class="form-row mb-3">
+                        <div>
+                            <label class="form-label">Expiry Date</label>
+                            {{ form.card_expiry }}
+                        </div>
+                        <div>
+                            <label class="form-label">CVV</label>
+                            {{ form.card_cvv }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Name on Card</label>
+                        {{ form.card_name }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-neon w-100 py-3">
+                    <i class="fas fa-lock me-2"></i>Pay ₹{{ plan.price|floatformat:0 }}
+                </button>
+
+                <div class="secure-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    Secured with 256-bit SSL encryption
+                </div>
+            </form>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="glass-card order-summary">
+            <h3 class="mb-4">Order Summary</h3>
+
+            <div class="order-gym">
+                <div class="order-gym-image">
+                    {% if gym.photos.first %}
+                    <img src="{{ gym.photos.first.image.url }}" alt="{{ gym.name }}">
+                    {% else %}
+                    <div class="placeholder"><i class="fas fa-dumbbell"></i></div>
+                    {% endif %}
+                </div>
+                <div>
+                    <h4 class="mb-1">{{ gym.name }}</h4>
+                    <p class="text-secondary mb-0 small">{{ gym.city }}</p>
+                </div>
+            </div>
+
+            <div class="order-plan">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1 text-neon">{{ plan.name }}</h4>
+                        <small class="text-secondary">{{ plan.get_duration_display }}</small>
+                    </div>
+                    <span class="fw-bold">₹{{ plan.price|floatformat:0 }}</span>
+                </div>
+            </div>
+
+            <div class="order-items">
+                <div class="order-item">
+                    <span class="text-secondary">Subtotal</span>
+                    <span>₹{{ plan.price|floatformat:0 }}</span>
+                </div>
+                <div class="order-item">
+                    <span class="text-secondary">Tax</span>
+                    <span class="text-success">Included</span>
+                </div>
+            </div>
+
+            <div class="order-total">
+                <span>Total</span>
+                <span class="amount">₹{{ plan.price|floatformat:0 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

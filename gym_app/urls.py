@@ -1,18 +1,25 @@
 from django.urls import path
 from . import views
-from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    # Landing and auth
+    path('', views.landing_page, name='landing'),
     path('login/', views.auth_login, name='login'),
-    path('register/', views.auth_register, name='register'),
     path('logout/', views.auth_logout, name='logout'),
+    path('register/customer/', views.customer_register, name='customer_register'),
+    path('register/owner/', views.owner_register, name='owner_register'),
     
-    # Admin Paths
-    path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    path('members/', views.admin_member_list, name='admin_member_list'),
-    path('payments/add/', views.payment_add, name='payment_add'),
+    # Customer paths
+    path('explore/', views.explore, name='explore'),
+    path('gym/<int:gym_id>/', views.gym_detail, name='gym_detail'),
+    path('gym/<int:gym_id>/book/<int:plan_id>/', views.checkout, name='checkout'),
+    path('booking/success/<uuid:booking_id>/', views.booking_success, name='booking_success'),
     
-    # Member Paths
-    path('profile/', views.member_profile, name='member_profile'),
+    # Owner paths
+    path('owner/dashboard/', views.owner_dashboard, name='owner_dashboard'),
+    path('owner/gym/register/', views.gym_register, name='gym_register'),
+    path('owner/gym/<int:gym_id>/plans/', views.gym_add_plans, name='gym_add_plans'),
+    
+    # API
+    path('api/update-location/', views.update_location, name='update_location'),
 ]

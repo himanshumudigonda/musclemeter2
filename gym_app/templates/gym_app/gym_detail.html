@@ -1,0 +1,402 @@
+{% extends 'gym_app/base.html' %}
+
+{% block title %}{{ gym.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gym-hero {
+        position: relative;
+        height: 400px;
+        overflow: hidden;
+        margin: -80px -15px 0;
+        padding-top: 80px;
+    }
+
+    .gym-hero-image {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        filter: brightness(0.5);
+    }
+
+    .gym-hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, var(--bg-primary) 0%, transparent 100%);
+    }
+
+    .gym-hero-content {
+        position: relative;
+        z-index: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 2rem;
+    }
+
+    .gym-rating {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--accent-primary);
+        color: #000;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .gym-title {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .gym-location {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    .gym-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .gym-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+    }
+
+    .gym-meta-item i {
+        color: var(--accent-secondary);
+    }
+
+    /* Photo Gallery */
+    .photo-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .photo-item {
+        aspect-ratio: 4/3;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        cursor: pointer;
+        transition: var(--transition-normal);
+    }
+
+    .photo-item:hover {
+        transform: scale(1.05);
+    }
+
+    .photo-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Plans Section */
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-title i {
+        color: var(--accent-primary);
+    }
+
+    .plans-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .plan-card {
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .plan-card.popular {
+        border-color: var(--accent-primary);
+    }
+
+    .plan-card.popular::before {
+        content: 'POPULAR';
+        position: absolute;
+        top: 1rem;
+        right: -2rem;
+        background: var(--accent-primary);
+        color: #000;
+        padding: 0.25rem 2.5rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        transform: rotate(45deg);
+    }
+
+    .plan-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .plan-duration {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .plan-price {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--accent-primary);
+        margin-bottom: 1.5rem;
+    }
+
+    .plan-price span {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        font-weight: 400;
+    }
+
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem;
+    }
+
+    .plan-features li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+        color: var(--text-secondary);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .plan-features li:last-child {
+        border-bottom: none;
+    }
+
+    .plan-features li i {
+        color: var(--success);
+        font-size: 0.9rem;
+    }
+
+    /* Map Section */
+    .map-container {
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        height: 300px;
+        margin: 2rem 0;
+    }
+
+    .map-container iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    /* Owner Info */
+    .owner-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+
+    .owner-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--bg-card);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .owner-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .owner-avatar i {
+        font-size: 1.5rem;
+        color: var(--text-muted);
+    }
+
+    .contact-links {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .contact-links a {
+        color: var(--text-secondary);
+        transition: var(--transition-fast);
+    }
+
+    .contact-links a:hover {
+        color: var(--accent-primary);
+    }
+
+    @media (max-width: 768px) {
+        .gym-hero {
+            height: 300px;
+        }
+
+        .photo-gallery {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="gym-hero">
+    <div class="gym-hero-image"
+        style="background-image: url('{% if primary_photo %}{{ primary_photo.image.url }}{% endif %}');"></div>
+    <div class="gym-hero-overlay"></div>
+    <div class="container gym-hero-content">
+        <div class="gym-rating">
+            <i class="fas fa-star"></i> {{ gym.rating }}
+        </div>
+        <h1 class="gym-title">{{ gym.name }}</h1>
+        <p class="gym-location">
+            <i class="fas fa-map-marker-alt"></i>
+            {{ gym.address }}
+        </p>
+        <div class="gym-meta">
+            <div class="gym-meta-item">
+                <i class="fas fa-clock"></i>
+                {{ gym.opening_time|time:"g:i A" }} - {{ gym.closing_time|time:"g:i A" }}
+            </div>
+            {% if distance %}
+            <div class="gym-meta-item">
+                <i class="fas fa-route"></i>
+                {{ distance }} km away
+            </div>
+            {% endif %}
+            <div class="gym-meta-item">
+                <i class="fas fa-phone"></i>
+                {{ gym.phone_number }}
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Description -->
+            {% if gym.description %}
+            <div class="glass-card p-4 mb-4">
+                <h2 class="section-title"><i class="fas fa-info-circle"></i> About</h2>
+                <p class="text-secondary">{{ gym.description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Photo Gallery -->
+            {% if photos %}
+            <div class="mb-4">
+                <h2 class="section-title"><i class="fas fa-images"></i> Gallery</h2>
+                <div class="photo-gallery">
+                    {% for photo in photos %}
+                    <div class="photo-item">
+                        <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:gym.name }}">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Plans -->
+            <div class="mb-4">
+                <h2 class="section-title"><i class="fas fa-tags"></i> Membership Plans</h2>
+                <div class="plans-grid">
+                    {% for plan in plans %}
+                    <div class="glass-card plan-card {% if plan.is_popular %}popular{% endif %}">
+                        <h3 class="plan-name">{{ plan.name }}</h3>
+                        <p class="plan-duration">{{ plan.get_duration_display }}</p>
+                        <div class="plan-price">
+                            ₹{{ plan.price|floatformat:0 }} <span>/ {{ plan.duration }}</span>
+                        </div>
+                        <ul class="plan-features">
+                            {% for feature in plan.get_features_list %}
+                            <li><i class="fas fa-check"></i> {{ feature }}</li>
+                            {% endfor %}
+                        </ul>
+                        <a href="{% url 'checkout' gym.id plan.id %}"
+                            class="btn {% if plan.is_popular %}btn-neon{% else %}btn-outline-neon{% endif %} w-100">
+                            Book Now
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="glass-card p-4 text-center">
+                        <p class="text-muted mb-0">No plans available yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Map -->
+            <div class="glass-card p-0 mb-4">
+                <div class="map-container">
+                    <iframe
+                        src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q={{ gym.latitude }},{{ gym.longitude }}&zoom=15"
+                        allowfullscreen loading="lazy">
+                    </iframe>
+                </div>
+                {% if gym.google_maps_link %}
+                <div class="p-3 text-center border-top" style="border-color: rgba(255,255,255,0.05) !important;">
+                    <a href="{{ gym.google_maps_link }}" target="_blank" class="btn btn-glass btn-sm">
+                        <i class="fas fa-directions me-1"></i> Get Directions
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Contact -->
+            <div class="glass-card owner-card mb-4">
+                <div class="owner-avatar">
+                    {% if gym.owner.photo %}
+                    <img src="{{ gym.owner.photo.url }}" alt="{{ gym.owner.user.get_full_name }}">
+                    {% else %}
+                    <i class="fas fa-user"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <h4 class="mb-0">{{ gym.owner.user.get_full_name|default:gym.owner.user.username }}</h4>
+                    <small class="text-muted">Gym Owner</small>
+                    <div class="contact-links">
+                        <a href="tel:{{ gym.phone_number }}"><i class="fas fa-phone"></i></a>
+                        {% if gym.email %}
+                        <a href="mailto:{{ gym.email }}"><i class="fas fa-envelope"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

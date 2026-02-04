@@ -1,0 +1,211 @@
+{% extends 'gym_app/base.html' %}
+
+{% block title %}Add Plans - {{ gym.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .plans-page {
+        padding: 2rem 0;
+    }
+
+    .plans-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    @media (max-width: 992px) {
+        .plans-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-card {
+        padding: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .existing-plans {
+        padding: 1.5rem;
+        position: sticky;
+        top: 100px;
+    }
+
+    .existing-plans-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .existing-plans-title i {
+        color: var(--accent-secondary);
+    }
+
+    .plan-item {
+        background: var(--bg-card);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .plan-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.25rem;
+    }
+
+    .plan-item-name {
+        font-weight: 600;
+    }
+
+    .plan-item-price {
+        color: var(--accent-primary);
+        font-weight: 700;
+    }
+
+    .plan-item-duration {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .popular-badge {
+        display: inline-block;
+        background: var(--accent-primary);
+        color: #000;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        margin-left: 0.5rem;
+    }
+
+    .no-plans {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-muted);
+    }
+
+    .no-plans i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .feature-hint {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
+    .form-check {
+        margin-top: 1rem;
+    }
+
+    .form-check-label {
+        color: var(--text-secondary);
+        cursor: pointer;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container plans-page">
+    <h1 class="mb-2">Add Membership Plans</h1>
+    <p class="text-secondary mb-4">Set up pricing plans for <strong>{{ gym.name }}</strong></p>
+
+    <div class="plans-grid">
+        <!-- Add Plan Form -->
+        <div class="glass-card form-card">
+            <h3 class="mb-4"><i class="fas fa-plus-circle me-2 text-neon"></i>New Plan</h3>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Plan Name *</label>
+                    {{ form.name }}
+                    <p class="feature-hint">e.g., "Basic", "Premium", "Pro+Trainer"</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Duration *</label>
+                    {{ form.duration }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Price (₹) *</label>
+                    {{ form.price }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Features *</label>
+                    {{ form.features }}
+                    <p class="feature-hint">Enter features separated by commas (e.g., "Gym access, Locker, Personal
+                        trainer")</p>
+                </div>
+
+                <div class="form-check">
+                    {{ form.is_popular }}
+                    <label class="form-check-label" for="id_is_popular">
+                        <i class="fas fa-fire me-1 text-warning"></i> Mark as Popular
+                    </label>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" name="add_another" class="btn btn-glass flex-grow-1">
+                        <i class="fas fa-plus me-2"></i>Add & Create Another
+                    </button>
+                    <button type="submit" class="btn btn-neon flex-grow-1">
+                        <i class="fas fa-check me-2"></i>Add & Finish
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Existing Plans -->
+        <div class="glass-card existing-plans">
+            <h4 class="existing-plans-title">
+                <i class="fas fa-list"></i> Current Plans
+            </h4>
+
+            {% if existing_plans %}
+            {% for plan in existing_plans %}
+            <div class="plan-item">
+                <div class="plan-item-header">
+                    <span class="plan-item-name">
+                        {{ plan.name }}
+                        {% if plan.is_popular %}<span class="popular-badge">POPULAR</span>{% endif %}
+                    </span>
+                    <span class="plan-item-price">₹{{ plan.price|floatformat:0 }}</span>
+                </div>
+                <span class="plan-item-duration">{{ plan.get_duration_display }}</span>
+            </div>
+            {% endfor %}
+
+            <a href="{% url 'owner_dashboard' %}" class="btn btn-outline-neon w-100 mt-3">
+                <i class="fas fa-check me-2"></i>Done Adding Plans
+            </a>
+            {% else %}
+            <div class="no-plans">
+                <i class="fas fa-tags"></i>
+                No plans added yet
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

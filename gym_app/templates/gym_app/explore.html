@@ -1,0 +1,305 @@
+{% extends 'gym_app/base.html' %}
+
+{% block title %}Explore Gyms{% endblock %}
+
+{% block extra_css %}
+<style>
+    .explore-header {
+        background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+        padding: 2rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .location-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--bg-card);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-xl);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.9rem;
+    }
+
+    .location-badge i {
+        color: var(--accent-secondary);
+    }
+
+    .gym-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+        padding: 2rem 0;
+    }
+
+    .gym-card {
+        overflow: hidden;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+    }
+
+    .gym-card-image {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .gym-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition-normal);
+    }
+
+    .gym-card:hover .gym-card-image img {
+        transform: scale(1.1);
+    }
+
+    .gym-card-image .distance-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .gym-card-image .rating-badge {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        background: var(--accent-primary);
+        color: #000;
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .gym-card-body {
+        padding: 1.25rem;
+    }
+
+    .gym-card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .gym-card-location {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .gym-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .gym-price {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .gym-price strong {
+        font-size: 1.25rem;
+        color: var(--accent-primary);
+        font-weight: 700;
+    }
+
+    .no-image-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--text-muted);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state-icon {
+        width: 120px;
+        height: 120px;
+        background: var(--bg-card);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        font-size: 3rem;
+        color: var(--text-muted);
+    }
+
+    .location-request {
+        max-width: 500px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .location-request-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.05));
+        border: 2px solid rgba(0, 240, 255, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        font-size: 2.5rem;
+        color: var(--accent-secondary);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @media (max-width: 768px) {
+        .gym-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Location Request (shown if no location) -->
+    <div id="locationRequest" class="location-request glass-card" style="display: none;">
+        <div class="location-request-icon">
+            <i class="fas fa-location-crosshairs"></i>
+        </div>
+        <h2 class="mb-3">Enable Location</h2>
+        <p class="text-secondary mb-4">
+            Allow location access to discover gyms near you and see accurate distances.
+        </p>
+        <button class="btn btn-neon" onclick="requestLocation()">
+            <i class="fas fa-map-marker-alt me-2"></i>Enable Location
+        </button>
+        <button class="btn btn-glass ms-2" onclick="skipLocation()">
+            Skip for now
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" style="display: none;">
+        <header class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="mb-2">Discover Gyms</h1>
+                <div class="location-badge" id="locationBadge">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="locationText">All Locations</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="gym-grid">
+            {% for item in gyms %}
+            <a href="{% url 'gym_detail' item.gym.id %}{% if user_lat %}?lat={{ user_lat }}&lon={{ user_lon }}{% endif %}"
+                class="glass-card gym-card">
+                <div class="gym-card-image">
+                    {% if item.primary_photo %}
+                    <img src="{{ item.primary_photo.image.url }}" alt="{{ item.gym.name }}">
+                    {% else %}
+                    <div class="no-image-placeholder">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    {% endif %}
+
+                    {% if item.distance %}
+                    <div class="distance-badge">
+                        <i class="fas fa-location-dot me-1"></i>{{ item.distance }} km
+                    </div>
+                    {% endif %}
+
+                    <div class="rating-badge">
+                        <i class="fas fa-star"></i>{{ item.gym.rating }}
+                    </div>
+                </div>
+                <div class="gym-card-body">
+                    <h3 class="gym-card-title">{{ item.gym.name }}</h3>
+                    <p class="gym-card-location">
+                        <i class="fas fa-map-pin"></i>
+                        {{ item.gym.address|truncatewords:8 }}
+                    </p>
+                    <div class="gym-card-footer">
+                        <div class="gym-price">
+                            Starting at
+                            {% if item.min_price %}
+                            <strong>₹{{ item.min_price.price|floatformat:0 }}</strong>
+                            {% else %}
+                            <strong>--</strong>
+                            {% endif %}
+                        </div>
+                        <span class="btn btn-outline-neon btn-sm">View Plans</span>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <h3 class="mb-2">No Gyms Found</h3>
+                <p class="text-secondary">We're expanding! Check back soon for gyms in your area.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Check if location already provided in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasLocation = urlParams.has('lat') && urlParams.has('lon');
+
+    if (hasLocation || {{ gyms | length }} > 0) {
+        document.getElementById('mainContent').style.display = 'block';
+        if (hasLocation) {
+            document.getElementById('locationText').textContent = 'Near You';
+        }
+    } else {
+        document.getElementById('locationRequest').style.display = 'block';
+    }
+
+    function requestLocation() {
+        showLoading();
+        getLocation()
+            .then(coords => {
+                window.location.href = `{% url 'explore' %}?lat=${coords.lat}&lon=${coords.lon}`;
+            })
+            .catch(err => {
+                hideLoading();
+                alert('Could not get location. Please enable location services.');
+                skipLocation();
+            });
+    }
+
+    function skipLocation() {
+        document.getElementById('locationRequest').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+    }
+</script>
+{% endblock %}

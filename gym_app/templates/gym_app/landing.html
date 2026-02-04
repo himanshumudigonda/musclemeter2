@@ -1,0 +1,300 @@
+{% extends 'gym_app/base.html' %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block extra_css %}
+<style>
+    .landing-hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding-top: 80px;
+    }
+
+    .landing-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background:
+            radial-gradient(ellipse at 20% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 40%),
+            radial-gradient(ellipse at 80% 80%, rgba(204, 255, 0, 0.08) 0%, transparent 40%);
+        animation: backgroundShift 15s ease-in-out infinite alternate;
+    }
+
+    @keyframes backgroundShift {
+        0% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+
+        100% {
+            transform: translate(-5%, -5%) rotate(5deg);
+        }
+    }
+
+    .landing-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        max-width: 1000px;
+        padding: 0 1rem;
+    }
+
+    .landing-title {
+        font-size: clamp(2.5rem, 8vw, 5rem);
+        font-weight: 900;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .landing-subtitle {
+        font-size: clamp(1rem, 2.5vw, 1.25rem);
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto 3rem;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease 0.2s forwards;
+    }
+
+    .role-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        max-width: 700px;
+        margin: 0 auto;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease 0.4s forwards;
+    }
+
+    .role-card {
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .role-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.02) 100%);
+        opacity: 0;
+        transition: var(--transition-normal);
+    }
+
+    .role-card:hover::before {
+        opacity: 1;
+    }
+
+    .role-card.customer:hover {
+        box-shadow: 0 0 40px rgba(0, 240, 255, 0.2), 0 16px 48px rgba(0, 0, 0, 0.4);
+        border-color: rgba(0, 240, 255, 0.3);
+    }
+
+    .role-card.owner:hover {
+        box-shadow: 0 0 40px rgba(204, 255, 0, 0.2), 0 16px 48px rgba(0, 0, 0, 0.4);
+        border-color: rgba(204, 255, 0, 0.3);
+    }
+
+    .role-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2.5rem;
+        transition: var(--transition-normal);
+    }
+
+    .customer .role-icon {
+        background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.05));
+        color: var(--accent-secondary);
+        border: 2px solid rgba(0, 240, 255, 0.3);
+    }
+
+    .owner .role-icon {
+        background: linear-gradient(135deg, rgba(204, 255, 0, 0.2), rgba(204, 255, 0, 0.05));
+        color: var(--accent-primary);
+        border: 2px solid rgba(204, 255, 0, 0.3);
+    }
+
+    .role-card:hover .role-icon {
+        transform: scale(1.1);
+    }
+
+    .role-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .role-description {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .role-arrow {
+        margin-top: 1.5rem;
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: var(--transition-normal);
+    }
+
+    .role-card:hover .role-arrow {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .customer .role-arrow {
+        color: var(--accent-secondary);
+    }
+
+    .owner .role-arrow {
+        color: var(--accent-primary);
+    }
+
+    /* Floating elements */
+    .floating-elements {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .floating-icon {
+        position: absolute;
+        font-size: 2rem;
+        opacity: 0.05;
+        animation: floatRandom 20s ease-in-out infinite;
+    }
+
+    .floating-icon:nth-child(1) {
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .floating-icon:nth-child(2) {
+        top: 20%;
+        right: 15%;
+        animation-delay: 3s;
+    }
+
+    .floating-icon:nth-child(3) {
+        bottom: 30%;
+        left: 20%;
+        animation-delay: 6s;
+    }
+
+    .floating-icon:nth-child(4) {
+        bottom: 15%;
+        right: 10%;
+        animation-delay: 9s;
+    }
+
+    .floating-icon:nth-child(5) {
+        top: 50%;
+        left: 5%;
+        animation-delay: 12s;
+    }
+
+    @keyframes floatRandom {
+
+        0%,
+        100% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+
+        25% {
+            transform: translate(20px, -30px) rotate(10deg);
+        }
+
+        50% {
+            transform: translate(-10px, 20px) rotate(-5deg);
+        }
+
+        75% {
+            transform: translate(30px, 10px) rotate(15deg);
+        }
+    }
+
+    .login-link {
+        margin-top: 2rem;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease 0.6s forwards;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="landing-hero">
+    <!-- Floating background elements -->
+    <div class="floating-elements">
+        <i class="fas fa-dumbbell floating-icon"></i>
+        <i class="fas fa-fire floating-icon"></i>
+        <i class="fas fa-heart-pulse floating-icon"></i>
+        <i class="fas fa-bolt floating-icon"></i>
+        <i class="fas fa-medal floating-icon"></i>
+    </div>
+
+    <div class="landing-content">
+        <h1 class="landing-title">
+            Find Your <span class="text-gradient">Perfect Gym</span>
+        </h1>
+        <p class="landing-subtitle">
+            Discover top-rated gyms near you, compare plans, and start your fitness journey today.
+            Just like booking a movie, but for your health.
+        </p>
+
+        <div class="role-cards">
+            <!-- Customer Card -->
+            <a href="{% url 'customer_register' %}" class="glass-card role-card customer text-decoration-none">
+                <div class="role-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 class="role-title text-white">I'm Looking for a Gym</h3>
+                <p class="role-description">
+                    Discover gyms near you, compare prices, and book your membership instantly.
+                </p>
+                <div class="role-arrow">
+                    <span>Get Started</span>
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </div>
+            </a>
+
+            <!-- Owner Card -->
+            <a href="{% url 'owner_register' %}" class="glass-card role-card owner text-decoration-none">
+                <div class="role-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h3 class="role-title text-white">I Own a Gym</h3>
+                <p class="role-description">
+                    List your gym, attract new members, and manage bookings all in one place.
+                </p>
+                <div class="role-arrow">
+                    <span>Register Gym</span>
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </div>
+            </a>
+        </div>
+
+        <div class="login-link">
+            <p class="text-secondary mb-0">
+                Already have an account?
+                <a href="{% url 'login' %}" class="text-neon fw-semibold">Sign in here</a>
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}
