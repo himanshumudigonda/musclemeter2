@@ -43,8 +43,14 @@
                             <input type="text" id="name" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
                             <textarea id="description" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Gym Photos (Max 5)</label>
+                            <input type="file" id="photos" class="form-control" multiple accept="image/*">
+                            <div class="form-text text-white-50">Upload high-quality images of your gym floor,
+                                equipment, and amenities.</div>
                         </div>
 
                         <div class="row">
@@ -128,24 +134,29 @@
             const btn = document.getElementById('submitBtn');
             const alert = document.getElementById('errorAlert');
 
-            const data = {
-                name: document.getElementById('name').value,
-                description: document.getElementById('description').value,
-                phone_number: document.getElementById('phone').value,
-                email: document.getElementById('email').value,
-                opening_time: document.getElementById('openingTime').value,
-                closing_time: document.getElementById('closingTime').value,
-                address: document.getElementById('address').value,
-                city: document.getElementById('city').value,
-                latitude: document.getElementById('latitude').value,
-                longitude: document.getElementById('longitude').value
-            };
+            const formData = new FormData();
+            formData.append('name', document.getElementById('name').value);
+            formData.append('description', document.getElementById('description').value);
+            formData.append('phone_number', document.getElementById('phone').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('opening_time', document.getElementById('openingTime').value);
+            formData.append('closing_time', document.getElementById('closingTime').value);
+            formData.append('address', document.getElementById('address').value);
+            formData.append('city', document.getElementById('city').value);
+            formData.append('latitude', document.getElementById('latitude').value || 0);
+            formData.append('longitude', document.getElementById('longitude').value || 0);
+
+            // Handle Photos
+            const fileInput = document.getElementById('photos');
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('photos', fileInput.files[i]);
+            }
 
             btn.disabled = true;
             btn.innerHTML = 'Registering...';
             alert.classList.add('d-none');
 
-            const result = await API.createGym(data);
+            const result = await API.createGym(formData);
 
             if (result.success) {
                 window.location.href = `gym-add-plans.html?gym_id=${result.gym_id}`;

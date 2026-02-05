@@ -109,10 +109,16 @@ class API {
 
     static async createGym(data) {
         try {
+            const isFormData = data instanceof FormData;
+            const headers = isFormData ? {} : this.getHeaders();
+
+            // If strictly using FormData, we trust browser to set Content-Type
+            // If using JSON, getHeaders sets application/json
+
             const response = await fetch(`${config.API_URL}/gyms/create/`, {
                 method: 'POST',
-                headers: this.getHeaders(),
-                body: JSON.stringify(data)
+                headers: headers,
+                body: isFormData ? data : JSON.stringify(data)
             });
             return await response.json();
         } catch (error) {
