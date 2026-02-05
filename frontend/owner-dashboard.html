@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard | MuscleMeter</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-dumbbell"></i> MUSCLE<span class="brand-accent">METER</span>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-2" id="navLinks"></ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container py-4 main-content">
+        <!-- Header -->
+        <header class="dashboard-header mb-4">
+            <p class="text-secondary mb-1">Welcome back,</p>
+            <h1 class="welcome-text" id="ownerName">Owner</h1>
+        </header>
+
+        <!-- Stats -->
+        <div class="stats-grid row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="glass-card p-3 text-center">
+                    <div class="display-4 fw-bold text-neon" id="statGyms">0</div>
+                    <div class="text-secondary">Registered Gyms</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-3 text-center">
+                    <div class="display-4 fw-bold text-cyan" id="statBookings">0</div>
+                    <div class="text-secondary">Total Bookings</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-3 text-center">
+                    <div class="display-4 fw-bold text-neon">₹<span id="statRevenue">0</span></div>
+                    <div class="text-secondary">Total Revenue</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-pills mb-4" id="dashboardTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#gyms">My Gyms</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#bookings">Recent Bookings</button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Gyms Tab -->
+            <div class="tab-pane fade show active" id="gyms">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h4 mb-0"><i class="fas fa-dumbbell me-2 text-neon"></i>Gym Listings</h2>
+                    <a href="gym-register.html" class="btn btn-neon btn-sm"><i class="fas fa-plus me-2"></i>Add Gym</a>
+                </div>
+                <div id="gymsList" class="d-grid gap-3"></div>
+            </div>
+
+            <!-- Bookings Tab -->
+            <div class="tab-pane fade" id="bookings">
+                <div class="glass-card p-0 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Gym</th>
+                                    <th>Customer</th>
+                                    <th>Plan</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/main.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check Auth
+            if (localStorage.getItem('userRole') !== 'owner') {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('ownerName').textContent = localStorage.getItem('username');
+
+            const data = await API.getOwnerDashboard();
+            if (!data || data.error) {
+                alert('Failed to load dashboard');
+                return;
+            }
+
+            // Stats
+            document.getElementById('statGyms').textContent = data.gyms.length;
+            document.getElementById('statBookings').textContent = data.stats.total_bookings;
+            document.getElementById('statRevenue').textContent = data.stats.total_revenue;
+
+            // Gyms List
+            const gymsContainer = document.getElementById('gymsList');
+            if (data.gyms.length > 0) {
+                data.gyms.forEach(gym => {
+                    gymsContainer.innerHTML += `
+                        <div class="glass-card p-3 d-flex flex-wrap gap-3 align-items-center">
+                            <div style="width: 80px; height: 60px; background: #333; border-radius: 8px; overflow: hidden;">
+                                ${gym.photos.length > 0 ? `<img src="${gym.photos[0].image}" style="width:100%;height:100%;object-fit:cover;">` : ''}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-0">${gym.name}</h5>
+                                <small class="text-secondary">${gym.city}</small>
+                            </div>
+                            <div>
+                                <a href="gym-detail.html?id=${gym.id}" class="btn btn-outline-neon btn-sm">View</a>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                gymsContainer.innerHTML = '<p class="text-muted text-center py-4">No gyms registered yet.</p>';
+            }
+
+            // Bookings (Mock logic since API currently doesn't nested bookings easy in the simplified views, 
+            // but in real app we'd iterate bookings. For now, showing placeholder)
+            document.getElementById('bookingsTable').innerHTML = `
+                <tr><td colspan="5" class="text-center py-4 text-muted">Booking history loading... (Requires API update for nested data)</td></tr>
+             `;
+        });
+    </script>
+</body>
+
+</html>

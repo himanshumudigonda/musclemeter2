@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Gym | MuscleMeter</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-dumbbell"></i> MUSCLE<span class="brand-accent">METER</span>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-2" id="navLinks"></ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="glass-card p-4 p-md-5">
+                    <h2 class="mb-4"><i class="fas fa-building text-neon me-2"></i>Register Your Gym</h2>
+
+                    <div id="errorAlert" class="alert alert-danger d-none"></div>
+
+                    <form id="gymForm" onsubmit="handleGymRegister(event)">
+                        <h4 class="text-secondary mb-3">Basic Info</h4>
+                        <div class="mb-3">
+                            <label class="form-label">Gym Name</label>
+                            <input type="text" id="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea id="description" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" id="phone" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" id="email" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Opening Time</label>
+                                <input type="time" id="openingTime" class="form-control" value="06:00" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Closing Time</label>
+                                <input type="time" id="closingTime" class="form-control" value="22:00" required>
+                            </div>
+                        </div>
+
+                        <h4 class="text-secondary mb-3 mt-4">Location</h4>
+                        <button type="button" class="btn btn-outline-neon btn-sm mb-3" onclick="autoDetectLocation()">
+                            <i class="fas fa-location-arrow me-1"></i> Auto Detect
+                        </button>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Address</label>
+                                <input type="text" id="address" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">City</label>
+                                <input type="text" id="city" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Latitude</label>
+                                <input type="text" id="latitude" class="form-control" required readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Longitude</label>
+                                <input type="text" id="longitude" class="form-control" required readonly>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-neon w-100 mt-4" id="submitBtn">
+                            Continue to Add Plans <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Auth Check
+        if (localStorage.getItem('userRole') !== 'owner') {
+            window.location.href = 'login.html';
+        }
+
+        function autoDetectLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    document.getElementById('latitude').value = pos.coords.latitude;
+                    document.getElementById('longitude').value = pos.coords.longitude;
+                });
+            }
+        }
+
+        async function handleGymRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const alert = document.getElementById('errorAlert');
+
+            const data = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                phone_number: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                opening_time: document.getElementById('openingTime').value,
+                closing_time: document.getElementById('closingTime').value,
+                address: document.getElementById('address').value,
+                city: document.getElementById('city').value,
+                latitude: document.getElementById('latitude').value,
+                longitude: document.getElementById('longitude').value
+            };
+
+            btn.disabled = true;
+            btn.innerHTML = 'Registering...';
+            alert.classList.add('d-none');
+
+            const result = await API.createGym(data);
+
+            if (result.success) {
+                window.location.href = `gym-add-plans.html?gym_id=${result.gym_id}`;
+            } else {
+                alert.classList.remove('d-none');
+                alert.innerText = result.error || 'Failed to register gym.';
+                btn.disabled = false;
+                btn.innerHTML = 'Continue to Add Plans';
+            }
+        }
+    </script>
+</body>
+
+</html>

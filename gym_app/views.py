@@ -375,3 +375,196 @@ def update_location(request):
             customer.save()
             return JsonResponse({'status': 'ok'})
     return JsonResponse({'status': 'error'}, status=400)
+# === REST API Views ===
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from .serializers import GymSerializer, GymPlanSerializer, BookingSerializer, GymOwnerSerializer
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def api_login(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(username=username, password=password)
+    
+    if user:
+        # Simple session login for hybrid approach, token for pure API
+        login(request, user)
+        is_owner = hasattr(user, 'gym_owner_profile')
+        return Response({
+            'success': True,
+            'username': user.username,
+            'is_owner': is_owner,
+            'role': 'owner' if is_owner else 'customer'
+        })
+    return Response({'error': 'Invalid credentials'}, status=400)
+
+class GymListAPI(generics.ListAPIView):
+    serializer_class = GymSerializer
+    permission_classes = [permissions.AllowAny]
+    queryset = Gym.objects.filter(is_active=True)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        lat = self.request.query_params.get('lat')
+        lon = self.request.query_params.get('lon')
+        
+        if lat and lon:
+            # Calculate distance using Python (basic implementation, ideally use PostGIS)
+            gyms = list(queryset)
+            for gym in gyms:
+                gym.distance = calculate_distance(lat, lon, gym.latitude, gym.longitude)
+            gyms.sort(key=lambda x: x.distance)
+            return gyms
+        return queryset
+
+class GymDetailAPI(generics.RetrieveAPIView):
+    serializer_class = GymSerializer
+    permission_classes = [permissions.AllowAny]
+    queryset = Gym.objects.filter(is_active=True)
+    lookup_field = 'id'
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def api_create_booking(request, gym_id, plan_id):
+    gym = get_object_or_404(Gym, id=gym_id)
+    plan = get_object_or_404(GymPlan, id=plan_id)
+    
+    # Calculate dates
+    start_date = timezone.now().date()
+    duration_map = {'day': 1, 'week': 7, 'month': 30, 'quarter': 90, 'half_year': 180, 'year': 365}
+    days = duration_map.get(plan.duration, 30)
+    end_date = start_date + timedelta(days=days)
+    
+    booking = Booking.objects.create(
+        customer=request.user.customer_profile,
+        gym=gym,
+        plan=plan,
+        amount=plan.price,
+        payment_status='completed',
+        payment_id=f"SIM_{uuid.uuid4().hex[:12].upper()}",
+        start_date=start_date,
+        end_date=end_date
+    )
+    
+    # Generate QR Code
+    qr_data = f"Code: {booking.access_code}\nGym: {booking.gym.name}"
+    qr = qrcode.QRCode(version=1, box_size=10, border=4)
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, format='PNG')
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    return Response({
+        'success': True,
+        'booking_id': booking.booking_id,
+        'access_code': booking.access_code,
+        'qr_image': qr_base64
+    })
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def api_owner_dashboard(request):
+    if not hasattr(request.user, 'gym_owner_profile'):
+        return Response({'error': 'Not authorized'}, status=403)
+        
+    owner = request.user.gym_owner_profile
+    gyms = owner.gyms.all()
+    serializer = GymSerializer(gyms, many=True)
+    
+    total_bookings = sum(gym.bookings.count() for gym in gyms)
+    total_revenue = sum(
+        sum(b.amount for b in gym.bookings.filter(payment_status='completed'))
+        for gym in gyms
+    )
+    
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def api_register_customer(request):
+    try:
+        data = request.data
+        if Customer.objects.filter(user__username=data.get('username')).exists():
+            return Response({'error': 'Username already exists'}, status=400)
+            
+        user = User.objects.create_user(
+            username=data['username'],
+            email=data.get('email', ''),
+            password=data['password'],
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name', '')
+        )
+        Customer.objects.create(user=user, phone_number=data.get('phone_number', ''))
+        
+        login(request, user)
+        return Response({'success': True, 'username': user.username, 'role': 'customer'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def api_register_owner(request):
+    try:
+        data = request.data
+        if GymOwner.objects.filter(user__username=data.get('username')).exists():
+            return Response({'error': 'Username already exists'}, status=400)
+
+        user = User.objects.create_user(
+            username=data['username'],
+            email=data.get('email', ''),
+            password=data['password'],
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name', '')
+        )
+        GymOwner.objects.create(user=user, phone_number=data.get('phone_number', ''))
+        
+        login(request, user)
+        return Response({'success': True, 'username': user.username, 'role': 'owner'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def api_create_gym(request):
+    if not hasattr(request.user, 'gym_owner_profile'):
+        return Response({'error': 'Not authorized'}, status=403)
+    
+    try:
+        data = request.data
+        gym = Gym.objects.create(
+            owner=request.user.gym_owner_profile,
+            name=data['name'],
+            description=data.get('description', ''),
+            address=data['address'],
+            city=data['city'],
+            latitude=data['latitude'],
+            longitude=data['longitude'],
+            phone_number=data.get('phone_number', ''),
+            email=data.get('email', ''),
+            opening_time=data.get('opening_time','06:00'),
+            closing_time=data.get('closing_time','22:00'),
+            is_active=True
+        )
+        return Response({'success': True, 'gym_id': gym.id})
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def api_create_plan(request, gym_id):
+    gym = get_object_or_404(Gym, id=gym_id)
+    if gym.owner.user != request.user:
+        return Response({'error': 'Not authorized'}, status=403)
+        
+    try:
+        serializer = GymPlanSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(gym=gym)
+            return Response({'success': True})
+        return Response(serializer.errors, status=400)
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
