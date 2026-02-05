@@ -384,24 +384,62 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .serializers import GymSerializer, GymPlanSerializer, BookingSerializer, GymOwnerSerializer
 
+import firebase_admin
+from firebase_admin import auth as firebase_auth
+from firebase_admin import credentials
+
+# Initialize Firebase (Try/Except to avoid errors if already init or missing creds during build)
+try:
+    if not firebase_admin._apps:
+        # In production, we typically use environment variable for creds or default
+        firebase_admin.initialize_app()
+except Exception as e:
+    print(f"Firebase Init Warning: {e}")
+
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
-def api_login(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    user = authenticate(username=username, password=password)
+def api_google_auth(request):
+    token = request.data.get('token')
+    if not token:
+        return Response({'error': 'No token provided'}, status=400)
     
-    if user:
-        # Simple session login for hybrid approach, token for pure API
+    try:
+        # Verify Token
+        decoded_token = firebase_auth.verify_id_token(token)
+        email = decoded_token['email']
+        uid = decoded_token['uid']
+        
+        # Get or Create User
+        user, created = User.objects.get_or_create(username=email, defaults={
+            'email': email,
+            'first_name': decoded_token.get('name', '').split(' ')[0],
+            'last_name': ' '.join(decoded_token.get('name', '').split(' ')[1:])
+        })
+        
+        # Log them in
         login(request, user)
+        
+        # Determine Role
         is_owner = hasattr(user, 'gym_owner_profile')
+        is_customer = hasattr(user, 'customer_profile')
+        
+        role = 'new'
+        if is_owner: role = 'owner'
+        elif is_customer: role = 'customer'
+        else:
+            # Default to Customer for MVP if new
+            Customer.objects.create(user=user)
+            role = 'customer'
+
         return Response({
             'success': True,
             'username': user.username,
-            'is_owner': is_owner,
-            'role': 'owner' if is_owner else 'customer'
+            'role': role
         })
-    return Response({'error': 'Invalid credentials'}, status=400)
+        
+    except Exception as e:
+        print(f"Auth Error: {e}")
+        return Response({'error': 'Invalid token or auth failed'}, status=400)
 
 class GymListAPI(generics.ListAPIView):
     serializer_class = GymSerializer

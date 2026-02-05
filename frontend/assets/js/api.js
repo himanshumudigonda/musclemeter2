@@ -62,6 +62,20 @@ class API {
         }
     }
 
+    static async googleLogin(token) {
+        try {
+            const response = await fetch(`${config.API_URL}/auth/google/`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify({ token })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Google Login Error:', error);
+            return { error: 'Network error' };
+        }
+    }
+
     static async registerCustomer(data) {
         try {
             const response = await fetch(`${config.API_URL}/register/customer/`, {

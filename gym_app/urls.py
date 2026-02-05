@@ -22,7 +22,7 @@ urlpatterns = [
     path('owner/gym/<int:gym_id>/plan/<int:plan_id>/edit/', views.gym_edit_plan, name='gym_edit_plan'),
     
     # API
-    path('api/login/', views.api_login, name='api_login'),
+    path('api/auth/google/', views.api_google_auth, name='api_google_auth'),
     path('api/register/customer/', views.api_register_customer, name='api_register_customer'),
     path('api/register/owner/', views.api_register_owner, name='api_register_owner'),
     path('api/gyms/create/', views.api_create_gym, name='api_create_gym'),
