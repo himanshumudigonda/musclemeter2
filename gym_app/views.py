@@ -452,7 +452,8 @@ def api_google_auth(request):
         
     except Exception as e:
         print(f"Auth Error: {e}")
-        return Response({'error': 'Authentication failed'}, status=400)
+        # Return the actual error for debugging (remove in production later)
+        return Response({'error': f'Auth failed: {str(e)}'}, status=400)
 
 class GymListAPI(generics.ListAPIView):
     serializer_class = GymSerializer
