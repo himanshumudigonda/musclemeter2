@@ -4,273 +4,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explore Gyms | MuscleMeter</title>
+    <title>Explore | MuscleMeter</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@300;400;500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <style>
-        .filters-section {
+        .explore-container {
+            padding-top: 100px;
+            padding-bottom: 50px;
+            min-height: 100vh;
+        }
+
+        .scroll-container {
+            overflow-x: auto;
+            white-space: nowrap;
             padding: 2rem 0;
-            position: sticky;
-            top: 76px;
-            z-index: 900;
-            background: rgba(10, 10, 15, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
         }
 
-        .filter-chip {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-secondary);
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius-xl);
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: var(--transition-fast);
+        .scroll-container::-webkit-scrollbar {
+            display: none;
         }
 
-        .filter-chip.active,
-        .filter-chip:hover {
-            border-color: var(--accent-primary);
-            color: var(--text-primary);
-            background: rgba(204, 255, 0, 0.1);
-        }
-
-        .gym-card {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .gym-card-image {
+        .gym-poster-card {
+            display: inline-block;
+            width: 300px;
+            height: 450px;
+            margin-right: 2rem;
             position: relative;
-            aspect-ratio: 16/9;
+            border-radius: var(--radius-lg);
             overflow: hidden;
+            transition: transform 0.4s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .gym-card-image img {
+        .gym-poster-card:hover {
+            transform: scale(1.05) translateY(-10px);
+            border-color: var(--neon-green);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .gym-poster-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.5s ease;
+            filter: brightness(0.7);
         }
 
-        .gym-card:hover .gym-card-image img {
-            transform: scale(1.1);
-        }
-
-        .gym-card-content {
-            padding: 1.5rem;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .gym-distance-badge {
+        .gym-poster-overlay {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            padding: 0.25rem 0.75rem;
-            border-radius: var(--radius-xl);
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--accent-secondary);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-        }
-
-        .gym-rating {
-            color: var(--accent-primary);
-            font-weight: 700;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .gym-price {
-            margin-top: auto;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .price-tag {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .location-prompt {
-            text-align: center;
+            bottom: 0;
+            left: 0;
+            width: 100%;
             padding: 2rem;
-            background: var(--bg-card);
-            border-radius: var(--radius-md);
-            margin-bottom: 2rem;
-            border: 1px dashed var(--accent-secondary);
+            background: linear-gradient(0deg, #000 0%, transparent 100%);
+        }
+
+        .category-pill {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            margin-right: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-pill.active,
+        .category-pill:hover {
+            background: var(--neon-green);
+            color: #000;
+            font-weight: 700;
+            border-color: var(--neon-green);
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">
-                <i class="fas fa-dumbbell"></i>
-                MUSCLE<span class="brand-accent">METER</span>
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center gap-2" id="navLinks">
-                    <!-- Links injected by main.js -->
-                </ul>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container-fluid px-5">
+            <a class="navbar-brand" href="index.html">MUSCLE<span class="text-neon">METER</span></a>
+            <div class="d-flex text-white">
+                <span id="userLocation" class="me-3 d-flex align-items-center"><i
+                        class="fas fa-map-marker-alt text-cyan me-2"></i> Detecting...</span>
             </div>
         </div>
     </nav>
 
-    <!-- Filters -->
-    <div class="filters-section">
-        <div class="container">
-            <div class="d-flex gap-2 overflow-auto pb-2">
-                <div class="filter-chip active"><i class="fas fa-th-large me-2"></i>All Gyms</div>
-                <div class="filter-chip"><i class="fas fa-crosshairs me-2"></i>Crossfit</div>
-                <div class="filter-chip"><i class="fas fa-running me-2"></i>Cardio</div>
-                <div class="filter-chip"><i class="fas fa-dumbbell me-2"></i>Strength</div>
-                <div class="filter-chip"><i class="fas fa-spa me-2"></i>Yoga</div>
+    <div class="container-fluid-custom explore-container">
+        <!-- Header -->
+        <h1 class="display-4 mb-4">NOW <span class="text-neon">TRENDING</span></h1>
+
+        <!-- Categories -->
+        <div class="mb-5 ">
+            <span class="category-pill active">All Gyms</span>
+            <span class="category-pill">Crossfit</span>
+            <span class="category-pill">Yoga</span>
+            <span class="category-pill">Boxing</span>
+            <span class="category-pill">24/7 Access</span>
+        </div>
+
+        <!-- Horizontal Scroll Section -->
+        <div id="gymResults" class="scroll-container">
+            <!-- Loading State -->
+            <div class="d-flex align-items-center justify-content-center w-100 py-5">
+                <div class="spinner-border text-neon" role="status"></div>
             </div>
         </div>
-    </div>
 
-    <!-- Main Content -->
-    <div class="container py-4">
-        <!-- Location Prompt -->
-        <div class="location-prompt" id="locationPrompt">
-            <i class="fas fa-map-marker-alt fa-2x text-cyan mb-3"></i>
-            <h4>Find Gyms Near You</h4>
-            <p class="text-secondary mb-3">Enable location to see gyms sorted by distance.</p>
-            <button class="btn btn-outline-neon btn-sm" onclick="enableLocation()">
-                <i class="fas fa-location-arrow me-2"></i>Enable Location
+        <div class="mt-5 text-center">
+            <button class="btn btn-outline-glow" onclick="loadGyms(null, null)">
+                <i class="fas fa-globe me-2"></i> Show All Gyms
             </button>
         </div>
-
-        <h2 class="mb-4">Top Rated Gyms</h2>
-
-        <!-- Gym List -->
-        <div class="row g-4" id="gymList">
-            <!-- Loading Skeletons -->
-            <div class="col-12 text-center py-5">
-                <div class="spinner-border text-neon" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="config.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/main.js"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            loadGyms();
-        });
-
-        function enableLocation() {
+            // Auto-trigger location
             if (navigator.geolocation) {
-                document.getElementById('locationPrompt').innerHTML = '<div class="spinner-border spinner-border-sm text-neon"></div> Locating...';
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        loadGyms(position.coords.latitude, position.coords.longitude);
-                        document.getElementById('locationPrompt').style.display = 'none';
+                    (pos) => {
+                        document.getElementById('userLocation').innerHTML = `<i class="fas fa-map-marker-alt text-cyan me-2"></i> Near You`;
+                        loadGyms(pos.coords.latitude, pos.coords.longitude);
                     },
-                    (error) => {
-                        console.error('Location error:', error);
-                        document.getElementById('locationPrompt').innerHTML = '<span class="text-danger">Location denied or unavailable. Showing all gyms.</span>';
-                        setTimeout(() => document.getElementById('locationPrompt').style.display = 'none', 3000);
+                    (err) => {
+                        document.getElementById('userLocation').innerHTML = `<i class="fas fa-globe text-secondary me-2"></i> Global View`;
                         loadGyms();
                     }
                 );
+            } else {
+                loadGyms();
             }
-        }
+        });
 
         async function loadGyms(lat = null, lon = null) {
-            const container = document.getElementById('gymList');
-            // Show loading if not already fetching
-            if (!container.innerHTML.includes('spinner')) {
-                container.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-neon"></div></div>';
-            }
+            const container = document.getElementById('gymResults');
+            container.innerHTML = '<div class="spinner-border text-neon m-5"></div>';
 
             const gyms = await API.fetchGyms(lat, lon);
-
             container.innerHTML = '';
 
             if (gyms.length === 0) {
                 container.innerHTML = `
-                    <div class="col-12 text-center py-5 animate-fade-in-up">
-                        <i class="fas fa-search-location fa-4x text-muted mb-3 opacity-50"></i>
-                        <h3 class="mb-2">No Gyms Found Nearby</h3>
-                        <p class="text-secondary mb-4">Try increasing the search radius or viewing all gyms.</p>
-                        <button class="btn btn-outline-neon" onclick="loadGyms(null, null)">
-                            <i class="fas fa-globe me-2"></i>Show All Gyms Everywhere
-                        </button>
-                    </div>
-                `;
+                    <div class="text-center w-100 mt-5">
+                        <h3 class="text-muted">No gyms found nearby.</h3>
+                    </div>`;
                 return;
             }
 
-            gyms.forEach(gym => {
-                const primaryPhoto = gym.photos && gym.photos.length > 0 ? gym.photos[0].image : '';
-                const minPrice = gym.plans && gym.plans.length > 0
-                    ? Math.min(...gym.plans.map(p => parseFloat(p.price)))
-                    : 0;
+            gyms.forEach((gym, index) => {
+                const img = gym.photos.length > 0 ? gym.photos[0].image : 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop';
+                const delay = index * 0.1;
 
-                const distanceBadge = gym.distance
-                    ? `<div class="gym-distance-badge"><i class="fas fa-location-arrow me-1"></i>${gym.distance.toFixed(1)} km</div>`
-                    : '';
-
-                const cardHtml = `
-                    <div class="col-md-6 col-lg-4">
-                        <div class="glass-card gym-card" onclick="window.location.href='gym-detail.html?id=${gym.id}'">
-                            <div class="gym-card-image">
-                                ${distanceBadge}
-                                ${primaryPhoto ? `<img src="${primaryPhoto}" alt="${gym.name}">` : '<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark"><i class="fas fa-dumbbell fa-3x text-muted"></i></div>'}
-                            </div>
-                            <div class="gym-card-content">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h3 class="h5 fw-bold mb-0 text-white">${gym.name}</h3>
-                                    <div class="gym-rating">
-                                        <i class="fas fa-star"></i> ${gym.rating}
-                                    </div>
-                                </div>
-                                <p class="text-secondary small mb-3 text-truncate">
-                                    <i class="fas fa-map-marker-alt me-1"></i> ${gym.city}
-                                </p>
-                                <div class="gym-price">
-                                    <span class="text-secondary small">Starting from</span>
-                                    <span class="price-tag text-neon">₹${minPrice > 0 ? Math.floor(minPrice) : 'N/A'}</span>
-                                </div>
-                            </div>
+                const card = `
+                    <div class="gym-poster-card" onclick="window.location.href='gym-detail.html?id=${gym.id}'" style="animation: fadeInUp 0.5s ease forwards ${delay}s">
+                        <img src="${img}" class="gym-poster-img" alt="${gym.name}">
+                        <div class="gym-poster-overlay">
+                            <h3 class="h4 fw-bold mb-1">${gym.name}</h3>
+                            <p class="text-neon mb-0"><i class="fas fa-star me-1"></i> ${gym.rating || 'New'}</p>
+                            <small class="text-muted">${gym.city}</small>
                         </div>
                     </div>
                 `;
-                container.innerHTML += cardHtml;
+                container.innerHTML += card;
+            });
+
+            // GSAP Entrance
+            gsap.from(".gym-poster-card", {
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: "power3.out"
             });
         }
     </script>
