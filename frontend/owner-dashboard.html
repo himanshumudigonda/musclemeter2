@@ -70,7 +70,7 @@
             <div class="tab-pane fade show active" id="gyms">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2 class="h4 mb-0"><i class="fas fa-dumbbell me-2 text-neon"></i>Gym Listings</h2>
-                    <a href="gym-register.html" class="btn btn-neon btn-sm"><i class="fas fa-plus me-2"></i>Add Gym</a>
+                    <a href="gym-register.html" class="btn btn-neon"><i class="fas fa-plus me-2"></i>Add Gym</a>
                 </div>
                 <div id="gymsList" class="d-grid gap-3"></div>
             </div>
@@ -143,7 +143,16 @@
                         </div>`;
                 });
             } else {
-                gymsContainer.innerHTML = '<p class="text-muted text-center py-4">No gyms registered yet.</p>';
+                gymsContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-dumbbell fa-4x text-muted mb-3 opacity-50"></i>
+                        <h4 class="mb-3">You haven't added any gyms yet</h4>
+                        <p class="text-secondary mb-4">Start listing your fitness center to get bookings.</p>
+                        <a href="gym-register.html" class="btn btn-neon btn-lg animate-pulse">
+                            <i class="fas fa-plus-circle me-2"></i>Add Your First Gym
+                        </a>
+                    </div>
+                `;
             }
 
             // Bookings (Mock logic since API currently doesn't nested bookings easy in the simplified views, 
