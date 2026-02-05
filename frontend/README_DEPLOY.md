@@ -10,9 +10,22 @@ You have successfully split your application! You now have a standalone **Fronte
     *   Ensure `CORS_ALLOWED_ORIGINS` in `settings.py` includes your Netlify URL (once you have it). For now, `CORS_ALLOW_ALL_ORIGINS = True` allows everything.
 
 ## 🎨 Step 2: Deploy Frontend (Netlify)
+
+### Option A: Drag & Drop (Easiest)
 1.  Go to [Netlify Drop](https://app.netlify.com/drop).
 2.  **Drag and Drop** the entire `frontend` folder from your computer into the browser.
-3.  Netlify will instantly deploy it and give you a URL (e.g., `https://brave-musclemeter-12345.netlify.app`).
+
+### Option B: Connect to GitHub (Recommended for Updates)
+Since you pushed your code to GitHub, you can connect Netlify to it. This way, **every time you push changes, Netlify updates your site automatically.**
+
+1.  Log in to Netlify and click **"Add new site"** -> **"Import from existing project"**.
+2.  Select **GitHub** and authorize it.
+3.  Pick your repository (`musclemeter`).
+4.  **CRITICAL CONFIGURATION:**
+    *   **Base directory:** `frontend`  <-- You MUST set this!
+    *   **Publish directory:** `frontend` (or leave blank if specific to build settings, but since it's static, usually just `frontend` acts as root).
+    *   **Build command:** (Leave empty, it's just HTML/JS).
+5.  Click **Deploy Site**.
 
 ## 🔗 Step 3: Connect Frontend to Backend
 1.  Open `frontend/config.js` on your computer.
