@@ -444,7 +444,12 @@ def api_google_auth(request):
         if is_owner:
             assigned_role = 'owner'
         elif is_customer:
-            assigned_role = 'customer'
+            # Existing Customer trying to be Owner?
+            if requested_role == 'owner':
+                 GymOwner.objects.get_or_create(user=user)
+                 assigned_role = 'owner'
+            else:
+                assigned_role = 'customer'
         else:
             # New User - Assign Role
             if requested_role == 'owner':
@@ -604,16 +609,27 @@ def api_create_gym(request):
             description=data.get('description', ''),
             address=data['address'],
             city=data['city'],
-            latitude=data['latitude'],
-            longitude=data['longitude'],
+            latitude=data.get('latitude', 0),
+            longitude=data.get('longitude', 0),
             phone_number=data.get('phone_number', ''),
             email=data.get('email', ''),
             opening_time=data.get('opening_time','06:00'),
             closing_time=data.get('closing_time','22:00'),
             is_active=True
         )
+        
+        # Handle Photos
+        if request.FILES.getlist('photos'):
+            for i, photo in enumerate(request.FILES.getlist('photos')):
+                GymPhoto.objects.create(
+                    gym=gym,
+                    image=photo,
+                    is_primary=(i == 0)
+                )
+
         return Response({'success': True, 'gym_id': gym.id})
     except Exception as e:
+        print(f"Create Gym Error: {e}")
         return Response({'error': str(e)}, status=400)
 
 @api_view(['POST'])
