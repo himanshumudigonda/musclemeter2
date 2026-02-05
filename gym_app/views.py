@@ -387,12 +387,22 @@ from .serializers import GymSerializer, GymPlanSerializer, BookingSerializer, Gy
 import firebase_admin
 from firebase_admin import auth as firebase_auth
 from firebase_admin import credentials
+import os
+import json
 
-# Initialize Firebase (Try/Except to avoid errors if already init or missing creds during build)
+# Initialize Firebase
 try:
     if not firebase_admin._apps:
-        # In production, we typically use environment variable for creds or default
-        firebase_admin.initialize_app()
+        # Check for env var credentials (Render production)
+        firebase_creds = os.environ.get('FIREBASE_CREDENTIALS')
+        
+        if firebase_creds:
+            cred_dict = json.loads(firebase_creds)
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred)
+        else:
+            # Fallback (Local dev with file, or default/GCP)
+            firebase_admin.initialize_app()
 except Exception as e:
     print(f"Firebase Init Warning: {e}")
 
