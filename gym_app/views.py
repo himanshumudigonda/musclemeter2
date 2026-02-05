@@ -400,14 +400,20 @@ except Exception as e:
 @permission_classes([permissions.AllowAny])
 def api_google_auth(request):
     token = request.data.get('token')
+    requested_role = request.data.get('role')  # 'owner' or 'customer'
+    
     if not token:
         return Response({'error': 'No token provided'}, status=400)
     
     try:
         # Verify Token
-        decoded_token = firebase_auth.verify_id_token(token)
+        try:
+            decoded_token = firebase_auth.verify_id_token(token)
+        except Exception:
+            # Fallback for dev/testing if needed, or strict fail
+            raise Exception("Invalid Token")
+
         email = decoded_token['email']
-        uid = decoded_token['uid']
         
         # Get or Create User
         user, created = User.objects.get_or_create(username=email, defaults={
@@ -419,27 +425,34 @@ def api_google_auth(request):
         # Log them in
         login(request, user)
         
-        # Determine Role
+        # Check Existing Roles
         is_owner = hasattr(user, 'gym_owner_profile')
         is_customer = hasattr(user, 'customer_profile')
         
-        role = 'new'
-        if is_owner: role = 'owner'
-        elif is_customer: role = 'customer'
+        assigned_role = 'customer' # Default
+        
+        if is_owner:
+            assigned_role = 'owner'
+        elif is_customer:
+            assigned_role = 'customer'
         else:
-            # Default to Customer for MVP if new
-            Customer.objects.create(user=user)
-            role = 'customer'
+            # New User - Assign Role
+            if requested_role == 'owner':
+                GymOwner.objects.create(user=user)
+                assigned_role = 'owner'
+            else:
+                Customer.objects.create(user=user)
+                assigned_role = 'customer'
 
         return Response({
             'success': True,
             'username': user.username,
-            'role': role
+            'role': assigned_role
         })
         
     except Exception as e:
         print(f"Auth Error: {e}")
-        return Response({'error': 'Invalid token or auth failed'}, status=400)
+        return Response({'error': 'Authentication failed'}, status=400)
 
 class GymListAPI(generics.ListAPIView):
     serializer_class = GymSerializer

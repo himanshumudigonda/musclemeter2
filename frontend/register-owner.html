@@ -4,106 +4,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner Registration | MuscleMeter</title>
-
+    <title>Partner Sign Up | MuscleMeter</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="assets/css/style.css" rel="stylesheet">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .glass-card {
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 242, 0.3);
+        }
+
+        .btn-google {
+            background: #fff;
+            color: #333;
+            font-weight: 600;
+            border-radius: 50px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            transition: 0.2s;
+            font-size: 1.1rem;
+            width: 100%;
+            border: none;
+        }
+
+        .btn-google:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+    </style>
 </head>
 
 <body>
 
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="glass-card p-4 p-md-5 animate-scale-in">
-                    <div class="text-center mb-4">
-                        <h2 class="fw-bold"><i class="fas fa-briefcase text-cyan me-2"></i>Gym Partner</h2>
-                        <p class="text-secondary">Register to list your gym and grow your business.</p>
-                    </div>
+    <div class="auth-container">
+        <div class="glass-card p-5 animate-scale-in">
+            <h2 class="mb-3 fw-bold text-cyan">Gym Partner</h2>
+            <p class="text-secondary mb-5">Register your gym and grow your business.</p>
 
-                    <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+            <div id="errorAlert" class="alert alert-danger d-none"></div>
 
-                    <form id="registerForm" onsubmit="handleRegister(event)">
-                        <div class="mb-3">
-                            <label class="form-label">Username</label>
-                            <input type="text" id="username" class="form-control" required>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label class="form-label">First Name</label>
-                                <input type="text" id="firstName" class="form-control" required>
-                            </div>
-                            <div class="col-6 mb-3">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" id="lastName" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" id="email" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Phone Number</label>
-                            <input type="tel" id="phone" class="form-control" required>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">Password</label>
-                            <input type="password" id="password" class="form-control" required>
-                        </div>
+            <button id="googleBtn" class="btn btn-google mb-4">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="24">
+                Continue with Google
+            </button>
 
-                        <button type="submit" class="btn btn-outline-neon w-100 mb-3" id="submitBtn">
-                            Register as Partner
-                        </button>
-
-                        <p class="text-center text-secondary small mb-0">
-                            Looking to work out? <a href="register.html" class="text-neon">Customer Sign Up</a>
-                        </p>
-                    </form>
-                </div>
-            </div>
+            <p class="text-secondary small">
+                Looking to work out? <a href="register.html" class="text-neon">Customer Sign Up</a>
+            </p>
         </div>
     </div>
 
     <script src="config.js"></script>
     <script src="assets/js/api.js"></script>
-    <script>
-        async function handleRegister(e) {
-            e.preventDefault();
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-            const btn = document.getElementById('submitBtn');
-            const alert = document.getElementById('errorAlert');
+        const app = initializeApp(config.FIREBASE_CONFIG);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        const btn = document.getElementById('googleBtn');
 
-            const data = {
-                username: document.getElementById('username').value,
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                phone_number: document.getElementById('phone').value,
-                first_name: document.getElementById('firstName').value,
-                last_name: document.getElementById('lastName').value
-            };
+        btn.addEventListener('click', async () => {
+            try {
+                btn.disabled = true;
+                const result = await signInWithPopup(auth, provider);
+                const token = await result.user.getIdToken();
 
-            btn.disabled = true;
-            btn.innerHTML = 'Registering...';
-            alert.classList.add('d-none');
+                // Pass 'owner' role
+                const apiResult = await API.googleLogin(token, 'owner');
 
-            const result = await API.registerOwner(data);
+                if (apiResult.success) {
+                    localStorage.setItem('username', apiResult.username);
+                    localStorage.setItem('userRole', apiResult.role);
 
-            if (result.success) {
-                localStorage.setItem('username', result.username);
-                localStorage.setItem('userRole', 'owner');
-                localStorage.setItem('isOwner', true);
-                window.location.href = 'gym-register.html'; // Direct to gym setup
-            } else {
-                alert.classList.remove('d-none');
-                alert.innerText = result.error || 'Registration failed.';
+                    if (apiResult.role === 'owner') {
+                        window.location.href = 'gym-register.html'; // Go directly to gym setup
+                    } else {
+                        // If they were already a customer, maybe redirect/warn?
+                        window.location.href = 'owner-dashboard.html';
+                    }
+                } else {
+                    throw new Error(apiResult.error);
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('errorAlert').classList.remove('d-none');
+                document.getElementById('errorAlert').innerText = "Registration failed. Please try again.";
                 btn.disabled = false;
-                btn.innerHTML = 'Register as Partner';
             }
-        }
+        });
     </script>
 </body>
 

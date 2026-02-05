@@ -62,12 +62,15 @@ class API {
         }
     }
 
-    static async googleLogin(token) {
+    static async googleLogin(token, role = null) {
         try {
+            const body = { token };
+            if (role) body.role = role;
+
             const response = await fetch(`${config.API_URL}/auth/google/`, {
                 method: 'POST',
                 headers: this.getHeaders(),
-                body: JSON.stringify({ token })
+                body: JSON.stringify(body)
             });
             return await response.json();
         } catch (error) {
